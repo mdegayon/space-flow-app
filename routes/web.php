@@ -3,9 +3,20 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
+use App\Http\Controllers\UmbraController;
+use App\Http\Controllers\ApiTestController;
+
+Route::get('/', [ApiTestController::class, 'index']);
+
+Route::get('/umbra/files', [UmbraController::class, 'listFiles']);
+Route::get('/umbra/folders', [UmbraController::class, 'listFolders']);
+Route::get('/umbra/folder/{folder}', [UmbraController::class, 'listFolderContents']);
+
+Route::get('/umbra/web-folders', [UmbraController::class, 'listFoldersFromWeb']);
+
+/*Route::get('/', function () {
     return Inertia::render('welcome');
-})->name('home');
+})->name('home');*/
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
