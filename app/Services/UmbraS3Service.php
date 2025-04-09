@@ -61,6 +61,87 @@ class UmbraS3Service
         return array_map(fn ($folder) => $folder['Prefix'], $folders);
     }
 
+    public function showFolderContents($folder)
+    {
+        $folders = [];
+        $files = [];
+
+        try {
+            $result = $this->s3Client->listObjectsV2([
+                'Bucket'    => $this->bucket,
+                'Prefix'    => rtrim($folder, '/') . '/',
+                'Delimiter' => '/',
+            ]);
+
+            // Obtener carpetas
+            if (isset($result['CommonPrefixes'])) {
+                foreach ($result['CommonPrefixes'] as $prefix) {
+                    $folders[] = $prefix['Prefix'];
+                }
+            }
+
+            // Obtener archivos
+            if (isset($result['Contents'])) {
+                foreach ($result['Contents'] as $content) {
+                    // Excluir el propio prefijo de la lista de archivos
+                    if ($content['Key'] !== rtrim($folder, '/') . '/') {
+                        $files[] = $content['Key'];
+                    }
+                }
+            }
+        } catch (AwsException $e) {
+            // Manejo de errores
+            return [
+                'error' => $e->getMessage(),
+            ];
+        }
+
+        return [
+            'folders' => $folders,
+            'files'   => $files,
+        ];
+    }
+
+    public function listFolderContentsNew(string $folder): array
+    {
+        $folder = rtrim($folder, '/') . '/'; // Asegurar que el prefijo termina en "/"
+
+        $result = $this->s3Client->listObjectsV2([
+            'Bucket' => $this->bucket,
+            'Prefix' => $folder,  // Especificamos la carpeta a listar
+            //'Delimiter' => '/',  // IMPORTANTE: NO USAR Delimiter para ver archivos
+        ]);
+
+        // Obtener carpetas dentro de la carpeta actual
+        $folders = [];
+        $files = [];
+
+        if (!empty($result['Contents'])) {
+            foreach ($result['Contents'] as $content) {
+                $key = $content['Key'];
+
+                // Si termina en "/", es una carpeta
+                if (str_ends_with($key, '/')) {
+                    $folders[] = $key;
+                } else {
+                    $files[] = [
+                        'name' => basename($key),
+                        'path' => $key,
+                        'size' => $content['Size'],
+                        'last_modified' => $content['LastModified'],
+                        'url' => $this->getFileUrl($key),
+                    ];
+                }
+            }
+        }
+
+        return [
+            'folders' => $folders,
+            'files' => $files,
+        ];
+    }
+
+
     public function listFolderContents(string $folder): array
     {
         $result = $this->s3Client->listObjectsV2([
