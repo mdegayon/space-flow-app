@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Services\UmbraS3Service;
 use Illuminate\Http\JsonResponse;
 
+use Illuminate\Support\Facades\Storage;
+
+
 class UmbraController extends Controller
 {
     protected UmbraS3Service $umbraService;
@@ -30,6 +33,18 @@ class UmbraController extends Controller
     {
         $folders = $this->umbraService->listFolders();
         return response()->json($folders);
+    }
+
+
+    public function showFolderContents($folder)
+    {
+        $contents = $this->umbraService->showFolderContents($folder);
+
+        if (isset($contents['error'])) {
+            return response()->json(['error' => $contents['error']], 500);
+        }
+
+        return response()->json($contents);
     }
 
     public function listFolderContents(string $folder): JsonResponse

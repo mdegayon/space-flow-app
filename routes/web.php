@@ -10,7 +10,11 @@ Route::get('/', [ApiTestController::class, 'index']);
 
 Route::get('/umbra/files', [UmbraController::class, 'listFiles']);
 Route::get('/umbra/folders', [UmbraController::class, 'listFolders']);
-Route::get('/umbra/folder/{folder}', [UmbraController::class, 'listFolderContents']);
+
+// TODO Choose between showFolderContents and listFoldersFromWeb
+Route::get('/umbra/folder/{path?}', [UmbraController::class, 'showFolderContents'])
+    ->where('path', '.*');
+//Route::get('/umbra/folder/{folder}', [UmbraController::class, 'listFolderContents']);
 
 Route::get('/umbra/web-folders', [UmbraController::class, 'listFoldersFromWeb']);
 
