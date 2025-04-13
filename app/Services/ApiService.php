@@ -21,7 +21,7 @@ class ApiService
             'timeout' => 10.0,
         ]);
 
-        $this->authenticate();
+        //$this->authenticate();
     }
 
     public function getMessage()
